@@ -1,0 +1,178 @@
+/**
+ * @license
+ * Copyright 2019 Google LLC. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/* [START maps_place_autocomplete_map] */
+/* 
+ * Always set the map height explicitly to define the size of the div element
+ * that contains the map. 
+ */
+ #map {
+    height: 100%;
+  }
+  
+  /* 
+   * Optional: Makes the sample page fill the window. 
+   */
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #place-autocomplete-card {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    margin: 10px;
+    padding: 5px;
+    font-family: Roboto, sans-serif;
+    font-size: large;
+    font-weight: bold;
+  }
+  
+  gmp-place-autocomplete {
+    width: 300px;
+  }
+  
+  #infowindow-content .title {
+    font-weight: bold;
+  }
+  
+  #map #infowindow-content {
+    display: inline;
+  }
+
+  #travel-time-box {
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 5;
+  }
+
+  /* Ensure the button is visible */
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: -40%; /* Initially hidden */
+    width: 33.33%;
+    height: 100vh;
+    background-color: white;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    padding: 20px;
+    overflow: hidden;
+    transition: right 0.3s ease;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    background: none;
+    border: none;
+    color: purple;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  width: calc(100% - 20px);
+}
+
+#minValue, #maxValue {
+  font-size: 14px;
+  color: grey;
+  width: 20px;
+  text-align: center;
+}
+
+#slider {
+  width: 100%;
+  margin: 0 10px;
+  height: 6px;
+  background-color: grey;
+}
+
+.slider-value {
+  position: absolute;
+  top: -25px; /* Position it above the slider */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: purple;
+  background-color: white;
+  padding: 2px 5px;
+  border: 1px solid lightgrey;
+  border-radius: 4px;
+}
+
+.places-list {
+  margin-top: auto; /* Push the list container down to the bottom */
+  padding-top: 130px; /* Space from the top of the list */
+  padding-bottom: 60px; /* Space from the bottom of the screen */
+  max-height: 65vh; /* Restrict height to keep it visible and allow scrolling */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.place-item {
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9; /* Background color for item */
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.place-image {
+  width: 80px; /* Set fixed width */
+  height: 80px; /* Set fixed height */
+  border-radius: 4px;
+  object-fit: cover; /* Crop the image */
+}
+
+.place-info {
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.place-rating {
+  font-size: 14px;
+  color: #f39c12; /* Gold color for rating */
+}
+
+.place-type {
+  font-size: 12px;
+  color: #7f8c8d; /* Gray color for type */
+}
+
+.place-price {
+  font-size: 12px;
+  color: #2c3e50; /* Darker color for price */
+}
+
+.place-closing-time {
+  font-size: 12px;
+  color: #e74c3c; /* Red color for closing time */
+}
+  /* [END maps_place_autocomplete_map] */
