@@ -1,8 +1,12 @@
+import { getLocationAtDuration } from './places.js';
+
 let map;
 let marker;
+let destination;
 let infoWindow;
 let directionsService;
 let directionsRenderer;
+let waypoints = [];
 
 async function initMap() {
     // Request needed libraries.
@@ -63,6 +67,8 @@ async function initMap() {
         await place.fetchFields({
             fields: ["location"],
         });
+
+        destination = place.location
     
         // Calculate and display route to the selected destination
         calculateAndDisplayRoute(marker.position, place.location);
@@ -70,93 +76,7 @@ async function initMap() {
     // [END maps_place_autocomplete_map_listener]
 }
 
-function interpolateLocation(start, end, timeFraction) {
-    const lat = start.lat + (end.lat - start.lat) * timeFraction;
-    const lng = start.lng + (end.lng - start.lng) * timeFraction;
-    return  { lat: lat, lng: lng };
-}
-
-function getLocationAtDuration(routeSteps, desiredTime) {
-    let cumulativeTime = 0;
-
-    for (let step of routeSteps) {
-        const stepDuration = step.duration.value; // duration in seconds
-        const stepWaypoints = decodePolyline(step.polyline.points); // Decode polyline
-
-        if (cumulativeTime + stepDuration >= desiredTime) {
-            // The desired time is within this step
-            const timeInStep = desiredTime - cumulativeTime;
-            const timeFraction = timeInStep / stepDuration;
-
-            // Find the location within the polyline of this step
-            return interpolateAlongPolyline(stepWaypoints, timeFraction);
-        }
-
-        // Move to the next step
-        cumulativeTime += stepDuration;
-    }
-
-    // If the desired time is beyond the route duration, return the last location
-    return routeSteps[routeSteps.length - 1].end_location;
-}
-
-// Function to interpolate along a decoded polyline
-function interpolateAlongPolyline(waypoints, timeFraction) {
-    const segmentFraction = timeFraction * (waypoints.length - 1);
-    const segmentIndex = Math.floor(segmentFraction);
-    const segmentStart = waypoints[segmentIndex];
-    const segmentEnd = waypoints[segmentIndex + 1];
-    const fractionInSegment = segmentFraction - segmentIndex;
-
-    return interpolateLocation(segmentStart, segmentEnd, fractionInSegment);
-}
-
-// Decodes a polyline to a list of lat/lng waypoints
-function decodePolyline(encoded) {
-    let points = [];
-    let index = 0, len = encoded.length;
-    let lat = 0, lng = 0;
-
-    while (index < len) {
-        let b, shift = 0, result = 0;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
-        lat += dlat;
-
-        shift = 0;
-        result = 0;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
-        lng += dlng;
-
-        points.push({ lat: lat / 1e5, lng: lng / 1e5 });
-    }
-
-    return points;
-}
-
-function placeMarkerAtLocation(locationAtTime) {
-    marker.position = locationAtTime;  // This should update the marker's position
-    console.log("Updated marker position:", locationAtTime);
-}
-
-
-// Calculate and display route from origin to destination
-function calculateAndDisplayRoute(origin, destination) {
-    const request = {
-        origin: origin,
-        destination: destination,
-        travelMode: 'DRIVING', // Can be DRIVING, WALKING, BICYCLING, TRANSIT
-    };
-
+function callRoute(request) {
     directionsService.route(request, function (result, status) {
         if (status === 'OK') {
             directionsRenderer.setDirections(result); // Show the route on the map
@@ -194,6 +114,37 @@ function calculateAndDisplayRoute(origin, destination) {
         }
     });
 }
+
+// Calculate and display route from origin to destination
+function calculateAndDisplayRoute(origin, destination) {
+    const request = {
+        origin: origin,
+        destination: destination,
+        travelMode: 'DRIVING', // Can be DRIVING, WALKING, BICYCLING, TRANSIT
+    };
+    
+    callRoute(request)
+
+}
+
+function calculateAndDisplayNewRoute(origin, destination, waypoints) {
+    console.log("waypoints", waypoints)
+    const request = {
+        origin: origin,
+        destination: destination,
+        waypoints: waypoints,
+        travelMode: 'DRIVING', // Can be DRIVING, WALKING, BICYCLING, TRANSIT
+    };
+
+    callRoute(request)
+
+}
+
+function placeMarkerAtLocation(locationAtTime) {
+    marker.position = locationAtTime;  // This should update the marker's position
+    console.log("Updated marker position:", locationAtTime);
+}
+
 
 function formatTime(seconds) {
     const hours = Math.floor(seconds / 3600);
@@ -237,22 +188,18 @@ function searchNearbyRestaurants(location) {
                     title: place.name
                 });
 
-
-
-
-                // // Add click event to show restaurant details
-                // google.maps.event.addListener(marker, 'click', () => {
-                //     infoWindow.setContent(`
-                //         <div><strong>${place.name}</strong></div>
-                //         <div>Rating: ${place.rating}</div>
-                //         <div>${place.vicinity}</div>
-                //     `);
-                //     infoWindow.open(map, marker);
-                // });
-
                 // Create place item element
                 const placeItem = document.createElement("div");
                 placeItem.className = "place-item";
+
+                // Add click event to the place item
+                placeItem.addEventListener("click", () => {
+                    console.log("Location:", place.geometry.location.toString());
+                    const waypoint = { location: place.geometry.location, stopover: true};
+                    waypoints.push(waypoint);
+                    calculateAndDisplayNewRoute(marker.position, destination, waypoints)
+                    // You can also trigger any other function here with the location
+                });
 
                 // Create image element
                 const image = document.createElement("img");
